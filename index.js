@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const Client = require('./client/Client');
 const config = require('./config.json');
 const {Player} = require('discord-player');
+const ncmExtractor = require('./helpers/extractor.js');
 
 const client = new Client();
 client.commands = new Discord.Collection();
@@ -18,6 +19,7 @@ for (const file of commandFiles) {
 console.log(client.commands);
 
 const player = new Player(client);
+player.use("Netease",ncmExtractor);
 
 player.on('error', (queue, error) => {
   console.log(
@@ -88,7 +90,7 @@ client.on('interactionCreate', async interaction => {
 
   try {
     command.execute(interaction, player);
-    
+
   } catch (error) {
     console.error(error);
     interaction.followUp({

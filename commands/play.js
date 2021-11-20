@@ -34,6 +34,7 @@ module.exports = {
       await interaction.deferReply();
 
       const query = interaction.options.get('query').value;
+      console.log(query);
       const searchResult = await player
         .search(query, {
           requestedBy: interaction.user,
