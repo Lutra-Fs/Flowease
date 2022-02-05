@@ -23,7 +23,7 @@
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "NeteaseCloudMusicApi": "^4.5.3",
-    "ytdl-core": "^4.10.0"
+    "ytdl-core": "^4.10.1"
   },
   "devDependencies": {
     "prettier": "^2.5.1"
