@@ -22,7 +22,7 @@
     "discord.js": "^13.6.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
-    "NeteaseCloudMusicApi": "^4.5.12",
+    "NeteaseCloudMusicApi": "^4.6.7",
     "ytdl-core": "^4.11.0"
   },
   "devDependencies": {
