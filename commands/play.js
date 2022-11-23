@@ -1,78 +1,73 @@
-const {GuildMember} = require('discord.js');
-const {QueryType} = require('discord-player');
+const { GuildMember } = require("discord.js");
+const { QueryType } = require("discord-player");
 
 module.exports = {
-  name: 'play',
-  description: 'Play a song in your channel!',
+  name: "play",
+  description: "Play a song in your channel!",
   options: [
     {
-      name: 'query',
+      name: "query",
       type: 3, // 'STRING' Type
-      description: 'The song you want to play',
-      required: true,
-    },
+      description: "The song you want to play",
+      required: true
+    }
   ],
   async execute(interaction, player) {
     try {
-      if (!(interaction.member instanceof GuildMember) || !interaction.member.voice.channel) {
+      const user_voice = interaction.guild.members.cache.get(interaction.user.id).voice;
+      if (!(interaction.member instanceof GuildMember) || !user_voice.channel) {
         return void interaction.reply({
-          content: 'You are not in a voice channel!',
-          ephemeral: true,
+          content: "You are not in a voice channel!",
+          ephemeral: true
         });
       }
-
+      const bot_voice = interaction.guild.members.cache.get(interaction.client.user.id).voice;
       if (
-        interaction.guild.me.voice.channelId &&
-        interaction.member.voice.channelId !== interaction.guild.me.voice.channelId
+        bot_voice.channel &&
+        user_voice.channelId !== bot_voice.channelId
       ) {
         return void interaction.reply({
-          content: 'You are not in my voice channel!',
-          ephemeral: true,
+          content: "You are not in my voice channel!",
+          ephemeral: true
         });
       }
-
       await interaction.deferReply();
-
-      const query = interaction.options.get('query').value;
+      const query = interaction.options.get("query").value;
       console.log(query);
       const searchResult = await player
         .search(query, {
           requestedBy: interaction.user,
-          searchEngine: QueryType.AUTO,
+          searchEngine: 'neteaseCloudMusic'
         })
         .catch(() => {});
+      console.log(searchResult);
       if (!searchResult || !searchResult.tracks.length)
-        return void interaction.followUp({content: 'No results were found!'});
-
+        return void interaction.followUp({ content: "No results were found!" });
       const queue = await player.createQueue(interaction.guild, {
         ytdlOptions: {
-          quality: 'highest',
-          filter: 'audioonly',
+          quality: "highest",
+          filter: "audioonly",
           highWaterMark: 1 << 25,
-          dlChunkSize: 0,
+          dlChunkSize: 0
         },
-        metadata: interaction.channel,
+        metadata: interaction.channel
       });
-
       try {
-        if (!queue.connection) await queue.connect(interaction.member.voice.channel);
+        if (!queue.connection) await queue.connect(user_voice.channelId);
       } catch {
         void player.deleteQueue(interaction.guildId);
         return void interaction.followUp({
-          content: 'Could not join your voice channel!',
+          content: "Could not join your voice channel!"
         });
       }
-
-      await interaction.followUp({
-        content: `⏱ | Loading your ${searchResult.playlist ? 'playlist' : 'track'}...`,
-      });
-      searchResult.playlist ? queue.addTracks(searchResult.tracks) : queue.addTrack(searchResult.tracks[0]);
+      await interaction.followUp({ content: "Enqueued!" });
+      queue.addTrack(searchResult.tracks[0]);
       if (!queue.playing) await queue.play();
     } catch (error) {
       console.log(error);
-      interaction.followUp({
-        content: 'There was an error trying to execute that command: ' + error.message,
+      return void interaction.followUp({
+        content: `There was an error: ${error.message}`
       });
     }
-  },
+  }
 };

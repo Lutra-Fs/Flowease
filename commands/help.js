@@ -12,7 +12,7 @@ module.exports = {
       str += `Name: ${command.name}, Description: ${command.description} \n`;
     }
 
-    return void interaction.reply({
+    return interaction.reply({
       content: str,
       ephemeral: true,
     });
