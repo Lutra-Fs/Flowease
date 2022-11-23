@@ -1,73 +1,72 @@
-const {GuildMember} = require('discord.js');
-const {QueueRepeatMode} = require('discord-player');
+const { QueueRepeatMode } = require('discord-player');
+const { beforeAction } = require('../helper/utils');
 
 module.exports = {
-  name: 'loop',
-  description: 'Sets loop mode',
-  options: [
-    {
-      name: 'mode',
-      type: 'INTEGER',
-      description: 'Loop type',
-      required: true,
-      choices: [
-        {
-          name: 'Off',
-          value: QueueRepeatMode.OFF,
-        },
-        {
-          name: 'Track',
-          value: QueueRepeatMode.TRACK,
-        },
-        {
-          name: 'Queue',
-          value: QueueRepeatMode.QUEUE,
-        },
-        {
-          name: 'Autoplay',
-          value: QueueRepeatMode.AUTOPLAY,
-        },
-      ],
-    },
-  ],
-  async execute(interaction, player) {
-    try {
-      if (!(interaction.member instanceof GuildMember) || !interaction.member.voice.channel) {
-        return void interaction.reply({
-          content: 'You are not in a voice channel!',
-          ephemeral: true,
-        });
-      }
+	name: 'loop',
+	description: 'Sets loop mode',
+	options: [
+		{
+			name: 'mode',
+			type: 'INTEGER',
+			description: 'Loop type',
+			required: true,
+			choices: [
+				{
+					name: 'Off',
+					value: QueueRepeatMode.OFF,
+				},
+				{
+					name: 'Track',
+					value: QueueRepeatMode.TRACK,
+				},
+				{
+					name: 'Queue',
+					value: QueueRepeatMode.QUEUE,
+				},
+				{
+					name: 'Autoplay',
+					value: QueueRepeatMode.AUTOPLAY,
+				},
+			],
+		},
+	],
+	async execute(interaction, player) {
+		try {
+			beforeAction(interaction);
 
-      if (
-        interaction.guild.me.voice.channelId &&
-        interaction.member.voice.channelId !== interaction.guild.me.voice.channelId
-      ) {
-        return void interaction.reply({
-          content: 'You are not in my voice channel!',
-          ephemeral: true,
-        });
-      }
+			await interaction.deferReply();
 
-      await interaction.deferReply();
+			const queue = player.getQueue(interaction.guildId);
+			if (!queue || !queue.playing) {
+				return interaction.followUp({
+					content: '❌ | No music is being played!',
+				});
+			}
 
-      const queue = player.getQueue(interaction.guildId);
-      if (!queue || !queue.playing) {
-        return void interaction.followUp({content: '❌ | No music is being played!'});
-      }
+			const loopMode = interaction.options.get('mode').value;
+			const success = queue.setRepeatMode(loopMode);
+			let mode = '▶';
+			switch (loopMode) {
+			case QueueRepeatMode.TRACK:
+				mode = '🔂';
+				break;
+			case QueueRepeatMode.QUEUE:
+				mode = '🔁';
+				break;
+			}
 
-      const loopMode = interaction.options.get('mode').value;
-      const success = queue.setRepeatMode(loopMode);
-      const mode = loopMode === QueueRepeatMode.TRACK ? '🔂' : loopMode === QueueRepeatMode.QUEUE ? '🔁' : '▶';
-
-      return void interaction.followUp({
-        content: success ? `${mode} | Updated loop mode!` : '❌ | Could not update loop mode!',
-      });
-    } catch (error) {
-      console.log(error);
-      interaction.followUp({
-        content: 'There was an error trying to execute that command: ' + error.message,
-      });
-    }
-  },
+			return interaction.followUp({
+				content: success
+					? `${mode} | Updated loop mode!`
+					: '❌ | Could not update loop mode!',
+			});
+		}
+		catch (error) {
+			console.log(error);
+			await interaction.followUp({
+				content:
+					'There was an error trying to execute that command: ' + error.message,
+			});
+		}
+	},
 };
