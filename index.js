@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 const Client = require('./client/Client');
 const config = require('./config.json');
 const { Player } = require('discord-player');
-//from helpers extractor.js import ncmExtractor
+// from helpers extractor.js import ncmExtractor
 const { NcmExtractor } = require('./helper/extractor.js');
 
 const client = new Client();
@@ -75,31 +75,13 @@ client.once('disconnect', () => {
 	console.log('Disconnect!');
 });
 
-client.on('messageCreate', async message => {
-	if (message.author.bot || !message.guild) return;
-	if (!client.application?.owner) await client.application?.fetch();
-
-	if (message.content === '!deploy' && message.author.id ===
-		client.application?.owner?.id) {
-		await message.guild.commands
-			.set(client.commands)
-			.then(() => {
-				message.reply('Deployed!');
-			})
-			.catch(err => {
-				message.reply(
-					'Could not deploy commands! Make sure the bot has the application.commands permission!');
-				console.error(err);
-			});
-	}
-});
-
 client.on('interactionCreate', async interaction => {
 	const command = client.commands.get(interaction.commandName.toLowerCase());
 
 	try {
 		command.execute(interaction, player);
-	} catch (error) {
+	}
+	catch (error) {
 		console.error(error);
 		interaction.followUp({
 			content: 'There was an error trying to execute that command!',
