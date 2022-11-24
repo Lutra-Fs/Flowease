@@ -9,33 +9,52 @@ module.exports = {
 			console.log('ncmExtractor: getInfo for query: ' + query);
 			// check if query is a song id
 			query = getQueryInfo(query);
-			if (query.query_type == '0') {
+			if (query.query_type === '0') {
 				console.log('ncmExtractor: query is a song');
 				if (query.query.match(/^[0-9]+$/)) {
 					console.log('ncmExtractor: query is a song id');
 					// assume it's a song id
 					return await play_song_id(query.query);
 				}
+					// match url and extract id from url, the url can be:
+					// https://music.163.com/#/song?id=123456
+				// https://y.music.163.com/m/song?app_version=8.8.70&id=1977466971&userid=353529908&dlt=0846
+				else if (query.query.startsWith(
+					'https://music.163.com/||https://y.music.163.com/')) {
+					// extract id from url, match &id||?id
+					const id = query.query.match(/([&?])id=([0-9]+)\|\|/)[0];
+					console.log('ncmExtractor: query is a song url, id = ' + id);
+					return await play_song_id(id);
+				}
 				else {
 					console.log('ncmExtractor: query is not a song id');
 					const search_result = await ncmApi.search(
 						{ keywords: query.query, type: 1, limit: 1 });
+					console.log(search_result.body);
 					const song_id = search_result.body.result.songs[0].id;
-					return await play_song_id(song_id);
+					console.log('ncmExtractor: song id = ' + song_id);
+					return await play_song_id('' + song_id);
 				}
 			}
-			else if (query.query_type == '1') {
+			else if (query.query_type === '1') {
 				console.log('ncmExtractor: query is a playlist');
 				console.log(query.query);
 				if (query.query.match(/^[0-9]+$/)) {
 					console.log('ncmExtractor: query is a playlist id');
 					return await play_playlist_id(query.query);
 				}
+				else if (query.query.startsWith(
+					'https://music.163.com/||https://y.music.163.com/')) {
+					// extract id from url, match &id||?id
+					const id = query.query.match(/([&?])id=([0-9]+)\|\|/)[0];
+					console.log('ncmExtractor: query is a song url, id = ' + id);
+					return await play_song_id(song_id);
+				}
 				else {
 					const search_result = await ncmApi.search(
 						{ keywords: query.query, type: 1000, limit: 1 });
 					const playlist_id = search_result.body.result.playlists[0].id;
-					return await play_playlist_id(playlist_id);
+					return await play_playlist_id(''+playlist_id);
 				}
 			}
 		},
@@ -64,14 +83,19 @@ function getQueryInfo(query) {
 	};
 }
 
+// song_id is a string
+// if song_id is not a string, it needs to be converted to a string
+// before calling this function, e.g. '' + song_id
 async function play_song_id(song_id) {
+	console.log('ncmExtractor: play_song_id: ' + song_id);
 	const song_info = await ncmApi.song_detail({ ids: song_id });
-	console.log('song_info = ' + song_info);
 	const song_url = await ncmApi.song_url({ id: song_id });
-	console.log('song_url = ' + song_url);
 	const song_hot_comments = await ncmApi.comment_hot(
 		{ id: song_id, type: 0 });
-	console.log('song_hot_comments = ' + song_hot_comments);
+	console.log(song_info.body);
+	console.log(song_info.body.songs[0].name);
+	console.log(song_info.body.songs[0].dt);
+	console.log(song_url.body.data[0].url);
 	return {
 		playlist: null,
 		info: [
@@ -84,9 +108,10 @@ async function play_song_id(song_id) {
 				engine: song_url.body.data[0].url,
 				views: 0,
 				author: generateAuthorsStr(song_info.body.songs[0].ar),
-				description: song_hot_comments.body.hotComments[0].content
-					? song_hot_comments.body.hotComments[0].content
-					: '',
+				description: song_hot_comments.body.hotComments.length > 0
+					? (song_hot_comments.body.hotComments[0].content
+						? song_hot_comments.body.hotComments[0].content
+						: '') : '',
 				url: song_url.body.data[0].url,
 			},
 		],
@@ -105,19 +130,19 @@ async function play_playlist_id(playlist_id) {
 		playlist_tracks = playlist_tracks.concat(playlist_track_songs);
 	}
 	const playlist_songs_info = [];
-	for (let i = 0; i < playlist_tracks.length; i++) {
-		const song_url = await ncmApi.song_url({ id: playlist_tracks[i].id });
+	for (const element of playlist_tracks) {
+		const song_url = await ncmApi.song_url({ id: element.id });
 		const song_hot_comments = await ncmApi.comment_hot(
-			{ id: playlist_tracks[i].id, type: 0 });
+			{ id: element.id, type: 0 });
 		playlist_songs_info.push({
-			title: playlist_tracks[i].name,
-			duration: playlist_tracks[i].dt,
-			thumbnail: playlist_tracks[i].al.picUrl
-				? playlist_tracks[i].al.picUrl
+			title: element.name,
+			duration: element.dt,
+			thumbnail: element.al.picUrl
+				? element.al.picUrl
 				: '',
 			engine: song_url.body.data[0].url,
 			views: 0,
-			author: generateAuthorsStr(playlist_tracks[i].ar),
+			author: generateAuthorsStr(element.ar),
 			description: song_hot_comments.body.hotComments[0].content
 				? song_hot_comments.body.hotComments[0].content
 				: '',
