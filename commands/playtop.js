@@ -1,15 +1,18 @@
-const { GuildMember } = require('discord.js');
+const { GuildMember, SlashCommandBuilder } = require('discord.js');
 module.exports = {
-	name: 'playtop',
-	description: 'Play a song before the next in your channel!',
-	options: [
-		{
-			name: 'query',
-			type: 3, // 'STRING' Type
-			description: 'The song you want to play',
-			required: true,
-		},
-	],
+	data: new SlashCommandBuilder()
+		.setName('playtop')
+		.setDescription('Play a song before the next in your channel!')
+		.addStringOption(option =>
+			option.setName('query')
+				.setDescription('The song you want to play')
+				.setRequired(true))
+		.addIntegerOption(option =>
+			option.setName('query-type')
+				.setDescription('The type of the query')
+				.setRequired(true)
+				.addChoices({ name: 'Song', value: 0 },
+					{ name: 'Playlist', value: 1 })),
 	async execute(interaction, player) {
 		try {
 			const user_voice = interaction.guild.members.cache.get(

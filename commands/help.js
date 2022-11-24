@@ -1,8 +1,10 @@
 const fs = require('fs');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'help',
-	description: 'List all available commands.',
+	data: new SlashCommandBuilder()
+		.setName('help')
+		.setDescription('List all of the commands'),
 	execute(interaction) {
 		let str = '';
 		const commandFiles = fs.readdirSync('./commands')
@@ -10,7 +12,12 @@ module.exports = {
 
 		for (const file of commandFiles) {
 			const command = require(`./${file}`);
-			str += `Name: ${command.name}, Description: ${command.description} \n`;
+			if (command.name) {
+				str += `Name: ${command.name}, Description: ${command.description} \n`;
+			}
+			else {
+				str += `Name: ${command.data.name}, Description: ${command.data.description} \n`;
+			}
 		}
 
 		return interaction.reply({

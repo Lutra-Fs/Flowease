@@ -1,22 +1,18 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'move',
-	description: 'move song position in the queue!',
-	options: [
-		{
-			name: 'track',
-			type: 4, // 'INTEGER' Type
-			description: 'The track number you want to move',
-			required: true,
-		},
-		{
-			name: 'position',
-			type: 4, // 'INTEGER' Type
-			description: 'The position to move it to',
-			required: true,
-		},
-	],
+	data : new SlashCommandBuilder()
+		.setName('move')
+		.setDescription('Move a song to a specific position in the queue')
+		.addIntegerOption(option =>
+			option.setName('track')
+				.setDescription('the track number to move')
+				.setRequired(true))
+		.addIntegerOption(option =>
+			option.setName('position')
+				.setDescription('the position to move the track to')
+				.setRequired(true)),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 

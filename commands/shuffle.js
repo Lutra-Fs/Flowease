@@ -1,8 +1,10 @@
 const { trimString, beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'shuffle',
-	description: 'shuffle the queue!',
+	data: new SlashCommandBuilder()
+		.setName('shuffle')
+		.setDescription('shuffle the queue!'),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 		await interaction.deferReply();

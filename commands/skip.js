@@ -1,8 +1,10 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'skip',
-	description: 'Skip a song!',
+	data: new SlashCommandBuilder()
+		.setName('skip')
+		.setDescription('Skip a song!'),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 

@@ -1,22 +1,18 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'swap',
-	description: 'swap song positions in the queue!',
-	options: [
-		{
-			name: 'track1',
-			type: 4, // 'INTEGER' Type
-			description: 'The track number you want to swap',
-			required: true,
-		},
-		{
-			name: 'track2',
-			type: 4, // 'INTEGER' Type
-			description: 'The track number you want to swap',
-			required: true,
-		},
-	],
+	data: new SlashCommandBuilder()
+		.setName('swap')
+		.setDescription('swap song positions in the queue!')
+		.addIntegerOption(option =>
+			option.setName('track1')
+				.setDescription('The track number you want to swap')
+				.setRequired(true))
+		.addIntegerOption(option =>
+			option.setName('track2')
+				.setDescription('The track number you want to swap')
+				.setRequired(true)),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 		await interaction.deferReply();

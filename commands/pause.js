@@ -1,8 +1,10 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'pause',
-	description: 'Pause current song!',
+	data: new SlashCommandBuilder()
+		.setName('pause')
+		.setDescription('Pause current song!'),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 

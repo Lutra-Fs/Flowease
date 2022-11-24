@@ -1,8 +1,10 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'stop',
-	description: 'Stop all songs in the queue!',
+	data: new SlashCommandBuilder()
+		.setName('stop')
+		.setDescription('Stop all songs in the queue!'),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 		await interaction.deferReply();

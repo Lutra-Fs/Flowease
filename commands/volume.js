@@ -1,16 +1,16 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'volume',
-	description: 'Change the volume!',
-	options: [
-		{
-			name: 'volume',
-			type: 4, // 'INTEGER' Type
-			description: 'Number between 0-200',
-			required: true,
-		},
-	],
+	data: new SlashCommandBuilder()
+		.setName('volume')
+		.setDescription('Change the volume!')
+		.addIntegerOption((option) =>
+			option
+				.setName('volume')
+				.setDescription('Number between 0-200')
+				.setRequired(true),
+		),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 		await interaction.deferReply();

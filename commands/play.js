@@ -1,22 +1,27 @@
-const { GuildMember } = require('discord.js');
+const { GuildMember, SlashCommandBuilder } = require('discord.js');
 module.exports = {
-	name: 'play',
-	description: 'Play a song in your channel!',
-	options: [
-		{
-			name: 'query',
-			type: 3, // 'STRING' Type
-			description: 'The song you want to play',
-			required: true,
-		},
-	],
+	// command with 2 options
+	data: new SlashCommandBuilder()
+		.setName('play')
+		.setDescription('Play a song in your channel!')
+		.addStringOption(option =>
+			option.setName('query')
+				.setDescription('The song you want to play')
+				.setRequired(true))
+		.addIntegerOption(option =>
+			option.setName('query-type')
+				.setDescription('The type of the query')
+				.setRequired(true)
+				.addChoices({ name: 'Song', value: 0 },
+					{ name: 'Playlist', value: 1 })),
 	async execute(interaction, player) {
 		try {
 			const user_voice = interaction.guild.members.cache.get(
 				interaction.user.id).voice;
 			const bot_voice = interaction.guild.members.cache.get(
 				interaction.client.user.id).voice;
-			if (!(interaction.member instanceof GuildMember) || !user_voice.channel) {
+			if (!(interaction.member instanceof GuildMember) ||
+				!user_voice.channel) {
 				return interaction.reply({
 					content: 'You are not in a voice channel!',
 					ephemeral: true,
@@ -30,9 +35,10 @@ module.exports = {
 			}
 			await interaction.deferReply();
 			const query = interaction.options.get('query').value;
+			const query_type = interaction.options.get('query-type').value;
 			console.log(query);
 			const searchResult = await player
-				.search(query, {
+				.search(query_type + ':' + query, {
 					requestedBy: interaction.user,
 					searchEngine: 'neteaseCloudMusic',
 				})
@@ -67,5 +73,6 @@ module.exports = {
 				content: `There was an error: ${error.message}`,
 			});
 		}
-	},
+	}
+	,
 };

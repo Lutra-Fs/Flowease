@@ -1,14 +1,12 @@
+const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
-	name: 'purge',
-	description: 'Delete the last messages in all chats.',
-	options: [
-		{
-			name: 'num',
-			type: 4, // 'INTEGER' Type
-			description: 'The number of messages you want to delete. (max 100)',
-			required: true,
-		},
-	],
+	data: new SlashCommandBuilder()
+		.setName('purge')
+		.setDescription('Delete the last messages in all chats.')
+		.addIntegerOption(option =>
+			option.setName('num')
+				.setDescription('The number of messages you want to delete. (max 100)')
+				.setRequired(true)),
 	async execute(interaction) {
 		const deleteCount = interaction.options.get('num').value;
 

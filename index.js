@@ -14,7 +14,12 @@ const commandFiles = fs.readdirSync('./commands')
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-	client.commands.set(command.name, command);
+	if (command.data.name) {
+		client.commands.set(command.data.name, command);
+	}
+	else {
+		console.log(`Command ${file} is not valid!`);
+	}
 }
 
 console.log(client.commands);
@@ -97,8 +102,8 @@ client.on('interactionCreate', async interaction => {
 	} catch (error) {
 		console.error(error);
 		interaction.followUp({
-      content: 'There was an error trying to execute that command!',
-    });
+			content: 'There was an error trying to execute that command!',
+		});
 	}
 });
 

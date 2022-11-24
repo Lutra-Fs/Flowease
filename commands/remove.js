@@ -1,16 +1,14 @@
 const { beforeAction } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'remove',
-	description: 'remove a song from the queue!',
-	options: [
-		{
-			name: 'number',
-			type: 4, // 'INTEGER' Type
-			description: 'The queue number you want to remove',
-			required: true,
-		},
-	],
+	data: new SlashCommandBuilder()
+		.setName('remove')
+		.setDescription('remove a song from the queue!')
+		.addIntegerOption(option =>
+			option.setName('number')
+				.setDescription('The queue number you want to remove')
+				.setRequired(true)),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 

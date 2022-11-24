@@ -1,9 +1,10 @@
 const { beforeAction, trimString } = require('../helper/utils');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'queue',
-	description: 'View the queue of current songs!',
-
+	data: new SlashCommandBuilder()
+		.setName('queue')
+		.setDescription('View the queue of current songs!'),
 	async execute(interaction, player) {
 		beforeAction(interaction);
 		const queue = player.getQueue(interaction.guildId);
