@@ -6,23 +6,23 @@ module.exports = {
 		important: true,
 		validate: () => true,
 		getInfo: async query => {
-			console.log('ncmExtractor: getInfo for query: ' + query);
 			// check if query is a song id
 			query = getQueryInfo(query);
 			if (query.query_type === '0') {
 				console.log('ncmExtractor: query is a song');
+				console.log('ncmExtractor: query is: ' + query.query);
 				if (query.query.match(/^[0-9]+$/)) {
 					console.log('ncmExtractor: query is a song id');
 					// assume it's a song id
 					return await play_song_id(query.query);
 				}
 					// match url and extract id from url, the url can be:
-					// https://music.163.com/#/song?id=123456
-				// https://y.music.163.com/m/song?app_version=8.8.70&id=1977466971&userid=353529908&dlt=0846
-				else if (query.query.startsWith(
-					'https://music.163.com/||https://y.music.163.com/')) {
+					// match any url that domain is music.163.com
+				else if (query.query.match(/https?:\/\/(y.)?music\.163\.com\/.*/)) {
+					console.log('ncmExtractor: query is a song url');
 					// extract id from url, match &id||?id
-					const id = query.query.match(/([&?])id=([0-9]+)\|\|/)[0];
+					let id = query.query.match(/([&?])id=([0-9]+)/)[0];
+					id= id.substring(id.indexOf('=') + 1);
 					console.log('ncmExtractor: query is a song url, id = ' + id);
 					return await play_song_id(id);
 				}
@@ -43,10 +43,11 @@ module.exports = {
 					console.log('ncmExtractor: query is a playlist id');
 					return await play_playlist_id(query.query);
 				}
-				else if (query.query.startsWith(
-					'https://music.163.com/||https://y.music.163.com/')) {
+				else if (query.query.match(/https?:\/\/(y.)?music\.163\.com\/.*/)) {
+					console.log('ncmExtractor: query is a song url');
 					// extract id from url, match &id||?id
-					const id = query.query.match(/([&?])id=([0-9]+)\|\|/)[0];
+					let id = query.query.match(/([&?])id=([0-9]+)/)[0];
+					id= id.substring(id.indexOf('=') + 1);
 					console.log('ncmExtractor: query is a song url, id = ' + id);
 					return await play_song_id(song_id);
 				}
@@ -54,7 +55,7 @@ module.exports = {
 					const search_result = await ncmApi.search(
 						{ keywords: query.query, type: 1000, limit: 1 });
 					const playlist_id = search_result.body.result.playlists[0].id;
-					return await play_playlist_id(''+playlist_id);
+					return await play_playlist_id('' + playlist_id);
 				}
 			}
 		},
@@ -79,7 +80,7 @@ function getQueryInfo(query) {
 	// 1. playlist
 	return {
 		query_type: query.split(':')[0],
-		query: query.split(':')[1],
+		query: query.substring(query.indexOf(':') + 1)
 	};
 }
 
