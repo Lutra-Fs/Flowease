@@ -1,10 +1,11 @@
 const fs = require('fs');
 const Discord = require('discord.js');
+const { ActivityType } = require('discord.js');
 const Client = require('./client/Client');
-const config = require('./config.json');
+const config = require('./config/config.json');
 const { Player } = require('discord-player');
 // from helpers extractor.js import ncmExtractor
-const { NcmExtractor } = require('./helper/extractor.js');
+const { NcmExtractor } = require('./extractor/extractor.js');
 
 const client = new Client();
 client.commands = new Discord.Collection();
