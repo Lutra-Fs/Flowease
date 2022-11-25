@@ -1,12 +1,13 @@
 {
-  "name": "Flowease",
+  "name": "flowease",
   "version": "1.0.0",
   "repository": "https://github.com/Lutra-Fs/Flowease.git",
   "description": "A discord music bot shipped with netease cloud music integration",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --fix ."
+    "lint": "eslint --fix .",
+    "start": "node index.js"
   },
   "keywords": [
     "netease",
@@ -29,5 +30,8 @@
   "devDependencies": {
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.3.0"
+  },
+  "volta": {
+    "node": "18.12.1"
   }
 }
