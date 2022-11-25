@@ -1,7 +1,7 @@
 {
-  "name": "ncmusic-discord-bot",
+  "name": "Flowease",
   "version": "1.0.0",
-  "repository": "https://github.com/Lutra-Fs/ncmusic-bot-discord.git",
+  "repository": "https://github.com/Lutra-Fs/Flowease.git",
   "description": "A discord music bot shipped with netease cloud music integration",
   "main": "index.js",
   "scripts": {
