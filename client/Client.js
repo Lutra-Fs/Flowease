@@ -1,13 +1,13 @@
-const {Client, Collection, GatewayIntentBits} = require('discord.js');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 
 module.exports = class extends Client {
-  constructor(config) {
-    super({
-      intents: [GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds],
-    });
+	constructor(config) {
+		super({
+			intents: [GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds],
+		});
 
-    this.commands = new Collection();
+		this.commands = new Collection();
 
-    this.config = config;
-  }
+		this.config = config;
+	}
 };
