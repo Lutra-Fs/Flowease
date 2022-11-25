@@ -1,4 +1,4 @@
-FROM node:17.1.0
+FROM node:18.12.1
 
 WORKDIR /usr/src/app
 
@@ -7,8 +7,8 @@ RUN apt-get install ffmpeg -y
 
 COPY package*.json ./
 
-RUN npm ci
+RUN npm ci --only=production
 
 COPY . .
 
-CMD [ "node", "index.js" ]
+CMD [ "node",  "index.js" ]
