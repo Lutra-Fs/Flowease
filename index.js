@@ -40,6 +40,7 @@ player.on('connectionError', (queue, error) => {
 player.on('trackStart', (queue, track) => {
 	queue.metadata.send(
 		`▶ | Started playing: **${track.title}** in **${queue.connection.channel.name}**!`);
+	client.user.setActivity(track.title, { type: ActivityType.Listening });
 });
 
 player.on('trackAdd', (queue, track) => {
@@ -49,14 +50,17 @@ player.on('trackAdd', (queue, track) => {
 player.on('botDisconnect', queue => {
 	queue.metadata.send(
 		'❌ | I was manually disconnected from the voice channel, clearing queue!');
+	client.user.setActivity('Idling');
 });
 
 player.on('channelEmpty', queue => {
 	queue.metadata.send('❌ | Nobody is in the voice channel, leaving...');
+	client.user.setActivity('Idling');
 });
 
 player.on('queueEnd', queue => {
 	queue.metadata.send('✅ | Queue finished!');
+	client.user.setActivity('Idling');
 });
 
 client.once('ready', async () => {
@@ -64,7 +68,7 @@ client.once('ready', async () => {
 });
 
 client.on('ready', function() {
-	client.user.setActivity(config.activity, { type: config.activityType });
+	client.user.setActivity('Idling');
 });
 
 client.once('reconnecting', () => {
