@@ -1,4 +1,5 @@
 const { GuildMember, SlashCommandBuilder } = require('discord.js');
+const { QueryType, QueryResolver } = require('discord-player');
 module.exports = {
 	// command with 2 options
 	data: new SlashCommandBuilder()
@@ -13,7 +14,8 @@ module.exports = {
 				.setDescription('The type of the query')
 				.setRequired(true)
 				.addChoices({ name: 'Song', value: 0 },
-					{ name: 'Playlist', value: 1 })),
+					{ name: 'Playlist', value: 1 },
+					{ name: 'Not from Netease? check this', value: -1 })),
 	async execute(interaction, player) {
 		try {
 			const user_voice = interaction.guild.members.cache.get(
@@ -37,12 +39,21 @@ module.exports = {
 			const query = interaction.options.get('query').value;
 			const query_type = interaction.options.get('query-type').value;
 			console.log(query);
-			const searchResult = await player
-				.search(query_type + ':' + query, {
+			let searchResult;
+			if (query_type === -1) {
+				searchResult = await player.search(query, {
+					requestedBy: interaction.user,
+					searchEngine: QueryResolver.resolve(query),
+				});
+			}
+			else {
+				searchResult = await player.search(query + '#' + query_type, {
 					requestedBy: interaction.user,
 					searchEngine: 'neteaseCloudMusic',
-				})
-				.catch(() => {});
+				});
+			}
+
+
 			console.log(searchResult);
 			if (!searchResult || !searchResult.tracks.length) {
 				return interaction.followUp({ content: 'No results were found!' });
@@ -58,7 +69,8 @@ module.exports = {
 			});
 			try {
 				if (!queue.connection) await queue.connect(user_voice.channelId);
-			} catch {
+			}
+			catch {
 				player.deleteQueue(interaction.guildId);
 				return interaction.followUp({
 					content: 'Could not join your voice channel!',
@@ -67,7 +79,8 @@ module.exports = {
 			await interaction.followUp({ content: 'Enqueued!' });
 			queue.addTracks(searchResult.tracks);
 			if (!queue.playing) await queue.play();
-		} catch (error) {
+		}
+		catch (error) {
 			console.log(error);
 			return interaction.followUp({
 				content: `There was an error: ${error.message}`,

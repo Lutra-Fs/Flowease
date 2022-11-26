@@ -4,7 +4,11 @@ module.exports = {
 	NcmExtractor: {
 		version: '1.0.0',
 		important: true,
-		validate: () => true,
+		validate: (query) => {
+			const query_info = getQueryInfo(query);
+			console.log('ncmExtractor: validate: ' + query_info.query + ' ' + query_info.query_type);
+			return query_info.query_type === '0' || query_info.query_type === '1';
+		},
 		getInfo: async query => {
 			// check if query is a song id
 			query = getQueryInfo(query);
@@ -16,13 +20,13 @@ module.exports = {
 					// assume it's a song id
 					return await play_song_id(query.query);
 				}
-					// match url and extract id from url, the url can be:
-					// match any url that domain is music.163.com
-				else if (query.query.match(/https?:\/\/(y.)?music\.163\.com\/.*/)) {
+				// match url and extract id from url, the url can be:
+				// match any url that domain is music.163.com
+				else if (query.query.match(/https?:\/\/(y\.)?music\.163\.com\/.*/)) {
 					console.log('ncmExtractor: query is a song url');
 					// extract id from url, match &id||?id
 					let id = query.query.match(/([&?])id=([0-9]+)/)[0];
-					id= id.substring(id.indexOf('=') + 1);
+					id = id.substring(id.indexOf('=') + 1);
 					console.log('ncmExtractor: query is a song url, id = ' + id);
 					return await play_song_id(id);
 				}
@@ -43,13 +47,13 @@ module.exports = {
 					console.log('ncmExtractor: query is a playlist id');
 					return await play_playlist_id(query.query);
 				}
-				else if (query.query.match(/https?:\/\/(y.)?music\.163\.com\/.*/)) {
+				else if (query.query.match(/https?:\/\/(y\.)?music\.163\.com\/.*/)) {
 					console.log('ncmExtractor: query is a song url');
 					// extract id from url, match &id||?id
 					let id = query.query.match(/([&?])id=([0-9]+)/)[0];
-					id= id.substring(id.indexOf('=') + 1);
+					id = id.substring(id.indexOf('=') + 1);
 					console.log('ncmExtractor: query is a song url, id = ' + id);
-					return await play_song_id(song_id);
+					return await play_song_id(id);
 				}
 				else {
 					const search_result = await ncmApi.search(
@@ -74,13 +78,14 @@ function generateAuthorsStr(author_list) {
 }
 
 function getQueryInfo(query) {
-	// the query passed in is query-type:query
+	// the query passed in is query#type
 	// query-type can be:
 	// 0. song
 	// 1. playlist
+	// find the last #, and split the string
 	return {
-		query_type: query.split(':')[0],
-		query: query.substring(query.indexOf(':') + 1)
+		query: query.substring(0, query.lastIndexOf('#')),
+		query_type: query.substring(query.lastIndexOf('#') + 1),
 	};
 }
 

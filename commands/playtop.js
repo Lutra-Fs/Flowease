@@ -1,4 +1,5 @@
 const { GuildMember, SlashCommandBuilder } = require('discord.js');
+const { QueryResolver } = require('discord-player');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('playtop')
@@ -12,7 +13,8 @@ module.exports = {
 				.setDescription('The type of the query')
 				.setRequired(true)
 				.addChoices({ name: 'Song', value: 0 },
-					{ name: 'Playlist', value: 1 })),
+					{ name: 'Playlist', value: 1 },
+					{ name: 'Not from Netease? check this', value: -1 })),
 	async execute(interaction, player) {
 		try {
 			const user_voice = interaction.guild.members.cache.get(
@@ -36,12 +38,21 @@ module.exports = {
 			await interaction.deferReply();
 
 			const query = interaction.options.get('query').value;
-			const searchResult = await player
-				.search(query, {
+			const query_type = interaction.options.get('query-type').value;
+			console.log(query);
+			let searchResult;
+			if (query_type === -1) {
+				searchResult = await player.search(query, {
+					requestedBy: interaction.user,
+					searchEngine: QueryResolver.resolve(query),
+				});
+			}
+			else {
+				searchResult = await player.search(query + '#' + query_type, {
 					requestedBy: interaction.user,
 					searchEngine: 'neteaseCloudMusic',
-				})
-				.catch(() => {});
+				});
+			}
 			if (!searchResult || !searchResult.tracks.length) {
 				return interaction.followUp({ content: 'No results were found!' });
 			}
@@ -60,7 +71,8 @@ module.exports = {
 				if (!queue.connection) {
 					await queue.connect(user_voice.channel);
 				}
-			} catch {
+			}
+			catch {
 				player.deleteQueue(interaction.guildId);
 				return interaction.followUp({
 					content: 'Could not join your voice channel!',
@@ -76,7 +88,8 @@ module.exports = {
 				? queue.insert(searchResult.tracks, 0)
 				: queue.insert(searchResult.tracks[0], 0);
 			if (!queue.playing) await queue.play();
-		} catch (error) {
+		}
+		catch (error) {
 			console.log(error);
 			interaction.followUp({
 				content:
