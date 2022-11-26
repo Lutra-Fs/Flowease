@@ -1,4 +1,30 @@
 
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/Lutra-Fs/Flowease/compare/1.1.0...1.1.1) (2022-11-26)
+
+### Chore
+
+* **changelog:** add changelog template
+
+### Docs
+
+* add CONTRIBUTING.md
+
+### Feat
+
+* **lyric:** add fallback for lyrics match system.
+* **search:** add search function from netease
+
+### Revert
+
+* revert commit 52836f8
+
+### Style
+
+* **README:** reformat to fix markdownlint issues
+* **lint:** resolve some lint issue. bump ecmaver to 2019
+
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://github.com/Lutra-Fs/Flowease/compare/1.0.0...1.1.0) (2022-11-25)
 
@@ -10,6 +36,7 @@
 
 ### Docs
 
+* **changelog:** add CHANGELOG.md
 * **readme:** add readme
 
 ### Feat
