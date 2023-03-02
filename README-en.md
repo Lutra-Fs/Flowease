@@ -62,7 +62,7 @@ If you like this project, please give it a star or sponsor me via [GitHub Sponso
 ### Technical Support
 
 If you have any questions about the project, you can submit an issue or discuss it in the discussion area.
-We also have a [Discord server]() for technical support.
+We also have a [Discord server](https://discord.gg/8q27XhXbjX) for technical support.
 
 ## Acknowledgements
 
