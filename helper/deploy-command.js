@@ -1,6 +1,6 @@
-const { REST, Routes } = require('discord.js');
-const { clientId, guildId, token } = require('../config/config.json');
-const fs = require('node:fs');
+import { REST, Routes } from 'discord.js';
+import config from '../config/config.json' assert { type: 'json' };
+import fs from 'node:fs';
 
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
@@ -9,8 +9,17 @@ const commandFiles = fs.readdirSync('../commands')
 
 // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
 for (const file of commandFiles) {
-	const command = require(`../commands/${file}`);
-	commands.push(command.data.toJSON());
+	import(`../commands/${file}`).then(command => {
+		if (command.data.name) {
+			commands.push(command.data.toJSON());
+		}
+		else {
+			console.log(`Command ${file} is not valid!`);
+		}
+	})
+		.catch(error => {
+			console.error(error);
+		});
 }
 console.log(commands);
 // log each option of each command
@@ -19,13 +28,17 @@ for (const command of commands) {
 }
 // ask for the target before deploying
 console.log('Please enter the target (guild or global):');
-const rl = require('readline').createInterface({
+import readline from 'node:readline';
+
+const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout,
 });
+
 rl.on('line', (input) => {
 	// Create a new REST instance
-	const rest = new REST({ version: '10' }).setToken(token);
+
+	const rest = new REST().setToken(config.token);
 
 	(async () => {
 		try {
@@ -33,21 +46,19 @@ rl.on('line', (input) => {
 
 			if (input === 'global') {
 				await rest.put(
-					Routes.applicationCommands(clientId),
+					Routes.applicationCommands(config.clientId),
 					{ body: commands },
 				);
 			}
 			// guild is the default, set the guild id in config.json
 			else {
 				await rest.put(
-					Routes.applicationGuildCommands(clientId, guildId),
+					Routes.applicationGuildCommands(config.clientId, config.guildId),
 					{ body: commands },
 				);
 			}
-
 			console.log('Successfully reloaded application (/) commands.');
-		}
-		catch (error) {
+		} catch (error) {
 			console.error(error);
 		}
 	})();
