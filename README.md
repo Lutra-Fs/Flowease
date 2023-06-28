@@ -68,7 +68,7 @@ npm start
 - 如果你喜欢这个项目，欢迎给我一个 Star。如果你想支持我，可以通过网页上的 Sponsor 按钮给我打赏。
 - 如果你有任何技术问题，可以在 [GitHub Issues](https://github.com/Lutra-Fs/Flowease/issues) 中提出。
 - 其他问题可以通过[GitHub Discussions](https://github.com/Lutra-Fs/Flowease/discussions) 中提出。
-- 我们也有一个 [Discord Server](https://discord.gg/8q27XhXbjX). 欢迎加入！(TODO)
+- 我们也有一个 [Discord Server](https://discord.gg/8q27XhXbjX). 欢迎加入！
 
 ## 致谢
 

@@ -1,91 +1,65 @@
-const { GuildMember, SlashCommandBuilder } = require('discord.js');
-const { QueryType, QueryResolver } = require('discord-player');
-module.exports = {
-	// command with 2 options
-	data: new SlashCommandBuilder()
-		.setName('play')
-		.setDescription('Play a song in your channel!')
-		.addStringOption(option =>
-			option.setName('query')
-				.setDescription('The song you want to play')
-				.setRequired(true))
-		.addIntegerOption(option =>
-			option.setName('query-type')
-				.setDescription('The type of the query')
-				.setRequired(true)
-				.addChoices({ name: 'Song', value: 0 },
-					{ name: 'Playlist', value: 1 },
-					{ name: 'Not from Netease? check this', value: -1 })),
-	async execute(interaction, player) {
+import { useMainPlayer, useQueue } from 'discord-player';
+import { SlashCommandBuilder } from 'discord.js';
+
+export const data = new SlashCommandBuilder()
+	.setName('play')
+	.setDescription('Play a song in your channel!')
+	.addStringOption(option =>
+		option.setName('query')
+			.setDescription('The song you want to play')
+			.setRequired(true));
+
+export async function execute(interaction) {
+	const player = useMainPlayer();
+	const channel = interaction.member.voice.channel;
+	if (!channel) {
+		return interaction.reply({
+			content: 'You are not in a voice channel!',
+			ephemeral: true,
+		});
+	}
+	if (!channel.joinable) {
+		return interaction.reply({
+			content: 'I cannot join your voice channel!',
+			ephemeral: true,
+		});
+	}
+	// check if the bot has already joined another channel in this guild
+	const queue = useQueue(interaction.guild.id);
+	if (queue && queue.channel !== channel) {
+		return interaction.reply({
+			content: 'I am already playing in another channel!',
+			ephemeral: true,
+		});
+	}
+
+	const query = interaction.options.getString('query', true);
+
+	await interaction.deferReply();
+	console.log(`query: ${query}`);
+	const searchResult = await player.search(query, {
+		requestedBy: interaction.user,
+	});
+	if (!searchResult?.tracks.length) {
+		return interaction.editReply(`No results were found for your query ${query}!`);
+	}
+	else {
 		try {
-			const user_voice = interaction.guild.members.cache.get(
-				interaction.user.id).voice;
-			const bot_voice = interaction.guild.members.cache.get(
-				interaction.client.user.id).voice;
-			if (!(interaction.member instanceof GuildMember) ||
-				!user_voice.channel) {
-				return interaction.reply({
-					content: 'You are not in a voice channel!',
-					ephemeral: true,
-				});
-			}
-			if (bot_voice.channel && user_voice.channelId !== bot_voice.channelId) {
-				return interaction.reply({
-					content: 'You are not in my voice channel!',
-					ephemeral: true,
-				});
-			}
-			await interaction.deferReply();
-			const query = interaction.options.get('query').value;
-			const query_type = interaction.options.get('query-type').value;
-			console.log(query);
-			let searchResult;
-			if (query_type === -1) {
-				searchResult = await player.search(query, {
-					requestedBy: interaction.user,
-					searchEngine: QueryResolver.resolve(query),
-				});
-			}
-			else {
-				searchResult = await player.search(query + '#' + query_type, {
-					requestedBy: interaction.user,
-					searchEngine: 'neteaseCloudMusic',
-				});
-			}
-
-
-			console.log(searchResult);
-			if (!searchResult || !searchResult.tracks.length) {
-				return interaction.followUp({ content: 'No results were found!' });
-			}
-			const queue = await player.createQueue(interaction.guild, {
-				ytdlOptions: {
-					quality: 'highest',
-					filter: 'audioonly',
-					highWaterMark: 1 << 25,
-					dlChunkSize: 0,
+			await player.play(channel, searchResult, {
+				nodeOptions: {
+					metadata: {
+						channel: interaction.channel,
+						client: interaction.guild.members.me,
+						requestedBy: interaction.user,
+					},
 				},
-				metadata: interaction.channel,
 			});
-			try {
-				if (!queue.connection) await queue.connect(user_voice.channelId);
-			}
-			catch {
-				player.deleteQueue(interaction.guildId);
-				return interaction.followUp({
-					content: 'Could not join your voice channel!',
-				});
-			}
-			await interaction.followUp({ content: 'Enqueued!' });
-			queue.addTracks(searchResult.tracks);
-			if (!queue.playing) await queue.play();
-		}
-		catch (error) {
-			console.log(error);
-			return interaction.followUp({
-				content: `There was an error: ${error.message}`,
+			await interaction.editReply(`🎶 | Track **${searchResult.tracks[0].title}** queued!`);
+		} catch (error) {
+			console.error(error);
+			await interaction.editReply({
+				content: 'There was an error trying to execute that command!\n' + error,
 			});
 		}
 	}
-	,
-};
+}
