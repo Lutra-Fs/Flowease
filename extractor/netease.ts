@@ -27,7 +27,7 @@ export default class NeteaseCloudMusic {
             duration: item.dt ? NeteaseCloudMusic.durationToString(item.dt) : '0:00',
             thumbnail: item.al.picUrl,
             artist: {
-                // Array of artists, save as a Array
+                // Array of artists, save as an Array
                 names: item.ar.map((artist: any) => artist.name),
             }
         }
