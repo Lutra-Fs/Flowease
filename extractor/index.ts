@@ -29,24 +29,32 @@ export class FloweaseExtractor extends BaseExtractor {
                 console.log("no result found for query: " + query);
                 return this.createResponse(null, []);
             }
-            const track = new Track(this.context.player, {
-                author: searchResult[0].artist.names.join(','),
-                duration: searchResult[0].duration,
-                description: searchResult[0].title,
-                title: searchResult[0].title,
-                thumbnail: searchResult[0].thumbnail,
-                views: 0,
-                url: "https://music.163.com/#/song?id=" + searchResult[0].id,
-                requestedBy: context.requestedBy,
+            const tracks = searchResult.map((item: any) => {
+                const track = new Track(this.context.player, {
+                    author: item.artist.names.join(','),
+                    duration: item.duration,
+                    description: item.title,
+                    title: item.title,
+                    thumbnail: item.thumbnail,
+                    views: 0,
+                    url: "https://music.163.com/#/song?id=" + item.id,
+                    requestedBy: context.requestedBy,
+                });
+                track.extractor = this;
+                return track;
             });
-            track.extractor = this;
-            return this.createResponse(null, [track]);
+
+            return this.createResponse(null, tracks);
         } else {
-            let id: string = "";
-            const match = RegExp(/id=(\d+)/).exec(query);
+            let
+                id: string = "";
+            const
+                match = RegExp(/id=(\d+)/).exec(query);
+
             if (match?.[1]) {
                 id = match[1];
             }
+
             const data = await NeteaseCloudMusic.getSongInfoById(id);
             if (data === null) {
                 return this.createResponse(null, []);
@@ -72,7 +80,8 @@ export class FloweaseExtractor extends BaseExtractor {
         const match = RegExp(/id=(\d+)/).exec(track.url);
         console.log("streaming track: " + track.url + " with id: " + match?.[1])
         const url = await NeteaseCloudMusic.getSongUrlById(<string>match?.[1]);
-        if (url === null || url === undefined) {
+        if (url === null || url === undefined
+        ) {
             return "";
         }
         track.raw.engine = {

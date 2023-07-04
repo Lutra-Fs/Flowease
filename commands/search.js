@@ -2,8 +2,8 @@ import { useMainPlayer, useQueue } from 'discord-player';
 import { SlashCommandBuilder } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
-	.setName('play')
-	.setDescription('Play a song in your channel!')
+	.setName('search')
+	.setDescription('Search results for a song, and select one to play')
 	.addStringOption(option =>
 		option.setName('query')
 			.setDescription('The song you want to play')
@@ -36,16 +36,43 @@ export async function execute(interaction) {
 	const query = interaction.options.getString('query', true);
 
 	await interaction.deferReply();
-	console.log(`query: ${query}`);
+
 	const searchResult = await player.search(query, {
 		requestedBy: interaction.user,
 	});
+
 	if (!searchResult?.tracks.length) {
 		return interaction.editReply(`No results were found for your query ${query}!`);
 	}
 	else {
 		try {
-			const track = searchResult.tracks[0];
+			// first we need to get the user to select a track
+			// then we can play it
+			// reply the user with the search results
+			// and then wait for the user to select a track
+			console.log(`searchResult: ${JSON.stringify(searchResult)}`);
+			interaction.editReply(`🎶 | Search results for **${query}**:\n` + searchResult.tracks.map((track, index) => {
+				return `**${++index} -** ${track.title} - ${track.author} (${track.duration})`;
+			}
+			).join('\n'));
+			// wait for the user to select a track
+			const filter = m => m.author.id === interaction.user.id && /^(\d+|cancel)$/i.test(m.content);
+			const response = await interaction.channel.awaitMessages({
+				filter,
+				max: 1,
+				time: 30000,
+				errors: ['time'],
+			});
+			// if the user cancels the selection, which means the content is not a valid number
+			const regex = /^\d$/i;
+			if (!regex.test(response.first().content)) {
+				return interaction.editReply('Cancelled selection.');
+			}
+			// get the track index
+			const trackIndex = Number(response.first().content) - 1;
+			// get the track
+			const track = searchResult.tracks[trackIndex];
+			// play the track
 			await player.play(channel, track, {
 				nodeOptions: {
 					metadata: {
