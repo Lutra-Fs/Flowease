@@ -7,7 +7,11 @@ export const data = new SlashCommandBuilder()
 	.addStringOption(option =>
 		option.setName('query')
 			.setDescription('The song you want to play')
-			.setRequired(true));
+			.setRequired(true))
+	.addIntegerOption(option =>
+		option.setName('position')
+			.setDescription('this num is from 0, negative numbers will be treated from the end')
+			.setRequired(false));
 
 export async function execute(interaction) {
 	const player = useMainPlayer();
@@ -46,15 +50,32 @@ export async function execute(interaction) {
 	else {
 		try {
 			const track = searchResult.tracks[0];
-			await player.play(channel, track, {
-				nodeOptions: {
-					metadata: {
-						channel: interaction.channel,
-						client: interaction.guild.members.me,
-						requestedBy: interaction.user,
+			let position = interaction.options.getInteger('location', false);
+			const queue = useQueue(interaction.guild.id);
+			if (queue && position !== undefined && position !== null && position !== -1 && position !== queue.tracks.length - 1) {
+				if (position > queue.tracks.length - 1 || position < -queue.tracks.length + 1) {
+					return interaction.editReply(`Invalid position ${position}!`);
+				}
+				else if (position < 0) {
+					position = queue.tracks.length + position;
+				}
+				queue.add(track, position);
+			}
+			else {
+				await player.play(channel, track, {
+					nodeOptions: {
+						metadata: {
+							channel: interaction.channel,
+							client: interaction.guild.members.me,
+							requestedBy: interaction.user,
+						},
+						leaveOnEmpty: true,
+						leaveOnEmptyCooldown: 60000,
+						leaveOnEnd: true,
+						leaveOnEndCooldown: 300000,
 					},
-				},
-			});
+				});
+			}
 			await interaction.editReply(`🎶 | Track **${searchResult.tracks[0].title}** queued!`);
 		} catch (error) {
 			console.error(error);

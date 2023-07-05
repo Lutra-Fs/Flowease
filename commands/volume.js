@@ -7,7 +7,9 @@ export const data = new SlashCommandBuilder()
 	.addIntegerOption(option =>
 		option.setName('volume')
 			.setDescription('The volume you want to set')
-			.setRequired(true));
+			.setRequired(true)
+			.setMinValue(0)
+			.setMaxValue(100));
 
 
 export async function execute(interaction) {
@@ -35,12 +37,6 @@ export async function execute(interaction) {
 	if (interaction.member.roles.cache.some(role => role.name === 'DJ') || interaction.member.permissions.has('ADMINISTRATOR')) {
 		// skip the current song
 		const volume = interaction.options.getInteger('volume');
-		if (volume < 0 || volume > 100) {
-			return interaction.reply({
-				content: 'The volume must be between 0 and 100',
-				ephemeral: true,
-			});
-		}
 		queue.node.setVolume(volume);
 		await interaction.reply(`Volume set to ${volume} in ${channel.name}`);
 	}
