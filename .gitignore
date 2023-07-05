@@ -265,4 +265,5 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 
 # project configuration
-config
+
+config/config.json

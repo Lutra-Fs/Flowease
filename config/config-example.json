@@ -1,0 +1,5 @@
+{
+  "token": "Your bot token here",
+  "clientId": "bot client id here",
+  "guildId": "Your server guild id here, used for deploying only to that server",
+}
