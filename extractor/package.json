@@ -27,14 +27,14 @@
     "lint": "eslint . --ext .ts --fix"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
+    "@types/node": "^20.14.2",
     "typescript": "^5.1.3"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "discord-player": "^6.6.0",
-    "NeteaseCloudMusicApi": "^4.8.10",
-    "tsup": "^7.1.0"
+    "NeteaseCloudMusicApi": "gitlab:Binaryify/neteasecloudmusicapi",
+    "tsup": "^8.1.0"
   },
   "typedoc": {
     "entryPoints": "./index.ts",
